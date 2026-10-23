@@ -40,8 +40,9 @@ fun HomeScreen(
     onNavigateToInventory: () -> Unit,
     onNavigateToCatalog: () -> Unit,
     onNavigateToAgenda: () -> Unit,
-    onNavigateToBackup: () -> Unit,
-    onNavigateToReports: () -> Unit
+    onNavigateToGallery: () -> Unit,
+    onNavigateToReports: () -> Unit,
+    onNavigateToBackup: () -> Unit
 ) {
     var showRenameDialog by remember { mutableStateOf(false) }
 
@@ -74,13 +75,13 @@ fun HomeScreen(
                 style = MaterialTheme.typography.headlineMedium
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             Button(
                 onClick = onNavigateToInventory,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(56.dp)
+                    .height(52.dp)
             ) {
                 Text("Inventario de Productos", style = MaterialTheme.typography.titleMedium)
             }
@@ -89,7 +90,7 @@ fun HomeScreen(
                 onClick = onNavigateToCatalog,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(56.dp)
+                    .height(52.dp)
             ) {
                 Text("Catálogo y Calculadora", style = MaterialTheme.typography.titleMedium)
             }
@@ -98,16 +99,25 @@ fun HomeScreen(
                 onClick = onNavigateToAgenda,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(56.dp)
+                    .height(52.dp)
             ) {
                 Text("Agenda y Citas", style = MaterialTheme.typography.titleMedium)
+            }
+
+            Button(
+                onClick = onNavigateToGallery,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(52.dp)
+            ) {
+                Text("Galería de Trabajos 📷", style = MaterialTheme.typography.titleMedium)
             }
 
             Button(
                 onClick = onNavigateToReports,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(56.dp)
+                    .height(52.dp)
             ) {
                 Text("Reportes Financieros", style = MaterialTheme.typography.titleMedium)
             }
@@ -116,7 +126,7 @@ fun HomeScreen(
                 onClick = onNavigateToBackup,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(56.dp)
+                    .height(52.dp)
             ) {
                 Text("Copias de Seguridad", style = MaterialTheme.typography.titleMedium)
             }
@@ -192,8 +202,9 @@ fun HomeScreenPreview() {
             onNavigateToInventory = {},
             onNavigateToCatalog = {},
             onNavigateToAgenda = {},
-            onNavigateToBackup = {},
-            onNavigateToReports = {}
+            onNavigateToGallery = {},
+            onNavigateToReports = {},
+            onNavigateToBackup = {}
         )
     }
 }

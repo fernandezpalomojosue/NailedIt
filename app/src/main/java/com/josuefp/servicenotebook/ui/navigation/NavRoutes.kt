@@ -7,6 +7,7 @@ sealed class NavRoute(val route: String) {
     data object Agenda : NavRoute("agenda")
     data object Backup : NavRoute("backup")
     data object Reports : NavRoute("reports")
+    data object Gallery : NavRoute("gallery")
     data object AppointmentForm : NavRoute("appointment_form?appointmentId={appointmentId}&dateMillis={dateMillis}") {
         fun createRoute(appointmentId: Long = 0L, dateMillis: Long = System.currentTimeMillis()) =
             "appointment_form?appointmentId=$appointmentId&dateMillis=$dateMillis"

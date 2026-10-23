@@ -17,6 +17,7 @@ import com.josuefp.servicenotebook.ui.screens.AgendaScreen
 import com.josuefp.servicenotebook.ui.screens.AppointmentFormScreen
 import com.josuefp.servicenotebook.ui.screens.BackupScreen
 import com.josuefp.servicenotebook.ui.screens.CatalogScreen
+import com.josuefp.servicenotebook.ui.screens.GalleryScreen
 import com.josuefp.servicenotebook.ui.screens.HomeScreen
 import com.josuefp.servicenotebook.ui.screens.InventoryScreen
 import com.josuefp.servicenotebook.ui.screens.ReportsScreen
@@ -43,8 +44,9 @@ fun AppNavHost(
                 onNavigateToInventory = { navController.navigate(NavRoute.Inventory.route) },
                 onNavigateToCatalog = { navController.navigate(NavRoute.Catalog.route) },
                 onNavigateToAgenda = { navController.navigate(NavRoute.Agenda.route) },
-                onNavigateToBackup = { navController.navigate(NavRoute.Backup.route) },
-                onNavigateToReports = { navController.navigate(NavRoute.Reports.route) }
+                onNavigateToGallery = { navController.navigate(NavRoute.Gallery.route) },
+                onNavigateToReports = { navController.navigate(NavRoute.Reports.route) },
+                onNavigateToBackup = { navController.navigate(NavRoute.Backup.route) }
             )
         }
         composable(NavRoute.Inventory.route) {
@@ -65,6 +67,12 @@ fun AppNavHost(
                 onNavigateToAppointmentForm = { appointmentId, dateMillis ->
                     navController.navigate(NavRoute.AppointmentForm.createRoute(appointmentId, dateMillis))
                 },
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+        composable(NavRoute.Gallery.route) {
+            GalleryScreen(
+                appName = appName,
                 onNavigateBack = { navController.popBackStack() }
             )
         }

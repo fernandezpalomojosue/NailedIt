@@ -10,6 +10,7 @@ import com.josuefp.servicenotebook.data.local.dao.ClientDao
 import com.josuefp.servicenotebook.data.local.dao.InventoryMovementDao
 import com.josuefp.servicenotebook.data.local.dao.ProductDao
 import com.josuefp.servicenotebook.data.local.dao.ServiceDao
+import com.josuefp.servicenotebook.data.local.dao.WorkPhotoDao
 import com.josuefp.servicenotebook.data.local.entity.AppConfigEntity
 import com.josuefp.servicenotebook.data.local.entity.AppointmentEntity
 import com.josuefp.servicenotebook.data.local.entity.AppointmentServiceEntity
@@ -18,6 +19,7 @@ import com.josuefp.servicenotebook.data.local.entity.InventoryMovementEntity
 import com.josuefp.servicenotebook.data.local.entity.ProductEntity
 import com.josuefp.servicenotebook.data.local.entity.ServiceEntity
 import com.josuefp.servicenotebook.data.local.entity.ServiceMaterialEntity
+import com.josuefp.servicenotebook.data.local.entity.WorkPhotoEntity
 
 @Database(
     entities = [
@@ -29,8 +31,9 @@ import com.josuefp.servicenotebook.data.local.entity.ServiceMaterialEntity
         AppointmentEntity::class,
         AppointmentServiceEntity::class,
         AppConfigEntity::class,
+        WorkPhotoEntity::class,
     ],
-    version = 4,
+    version = 5,
     exportSchema = false,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -41,6 +44,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun clientDao(): ClientDao
     abstract fun appointmentDao(): AppointmentDao
     abstract fun appConfigDao(): AppConfigDao
+    abstract fun workPhotoDao(): WorkPhotoDao
 
     companion object {
         @Volatile
