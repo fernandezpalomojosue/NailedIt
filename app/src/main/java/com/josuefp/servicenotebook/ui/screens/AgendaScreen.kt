@@ -108,6 +108,7 @@ fun AgendaScreen(
     var showAddClientDialog by remember { mutableStateOf(false) }
     var editingClient by remember { mutableStateOf<ClientEntity?>(null) }
     var clientForHistory by remember { mutableStateOf<ClientEntity?>(null) }
+    var completedAppForSuggestion by remember { mutableStateOf<AppointmentWithDetails?>(null) }
 
     var clientToDelete by remember { mutableStateOf<ClientEntity?>(null) }
     var appointmentToDelete by remember { mutableStateOf<AppointmentEntity?>(null) }
@@ -153,7 +154,17 @@ fun AgendaScreen(
         onDeleteAppointmentClick = { appEntity ->
             appointmentToDelete = appEntity
         },
-        onUpdateAppointmentStatus = viewModel::updateAppointmentStatus
+        onUpdateAppointmentStatus = { appId, newStatus ->
+            if (newStatus == "COMPLETED") {
+                val appDetails = allAppointments.find { it.appointment.id == appId }
+                viewModel.updateAppointmentStatus(appId, newStatus)
+                if (appDetails != null) {
+                    completedAppForSuggestion = appDetails
+                }
+            } else {
+                viewModel.updateAppointmentStatus(appId, newStatus)
+            }
+        }
     )
 
     if (showAddClientDialog) {
@@ -172,6 +183,16 @@ fun AgendaScreen(
             client = clientForHistory!!,
             appointments = allAppointments,
             onDismiss = { clientForHistory = null }
+        )
+    }
+
+    if (completedAppForSuggestion != null) {
+        NextAppointmentSuggestionDialog(
+            completedAppointment = completedAppForSuggestion!!,
+            onDismiss = { completedAppForSuggestion = null },
+            onScheduleNextAppointment = { _, suggestedDateMillis ->
+                onNavigateToAppointmentForm(0L, suggestedDateMillis)
+            }
         )
     }
 
@@ -356,6 +377,91 @@ fun AgendaScreenContent(
             }
         }
     }
+}
+
+@Composable
+fun NextAppointmentSuggestionDialog(
+    completedAppointment: AppointmentWithDetails,
+    onDismiss: () -> Unit,
+    onScheduleNextAppointment: (clientId: Long, suggestedDateMillis: Long) -> Unit
+) {
+    val clientName = completedAppointment.client?.name ?: "la clienta"
+    val baseDate = completedAppointment.appointment.appointmentDate
+
+    val cal15 = remember(baseDate) {
+        Calendar.getInstance().apply {
+            timeInMillis = baseDate
+            add(Calendar.DAY_OF_YEAR, 15)
+        }
+    }
+
+    val cal21 = remember(baseDate) {
+        Calendar.getInstance().apply {
+            timeInMillis = baseDate
+            add(Calendar.DAY_OF_YEAR, 21)
+        }
+    }
+
+    val dateFormatDayMonth = remember { SimpleDateFormat("d 'de' MMMM", Locale("es", "ES")) }
+    val dateFormatDayMonthYear = remember { SimpleDateFormat("d 'de' MMMM 'de' yyyy", Locale("es", "ES")) }
+
+    val str15 = dateFormatDayMonth.format(cal15.time)
+    val str21 = dateFormatDayMonthYear.format(cal21.time)
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("🎉 ¡Servicio Completado!") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Text(
+                    text = "Se ha registrado el servicio para $clientName y se han descontado los insumos del inventario.",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(modifier = Modifier.padding(14.dp)) {
+                        Text(
+                            text = "💡 Sugerencia de Próxima Cita:",
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Se recomienda agendar el retocado o mantenimiento en 15 a 21 días:",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "📅 Entre el $str15 y el $str21.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    onScheduleNextAppointment(completedAppointment.client?.id ?: 0L, cal15.timeInMillis)
+                    onDismiss()
+                }
+            ) {
+                Text("Agendar Próxima Cita")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cerrar")
+            }
+        }
+    )
 }
 
 @Composable
