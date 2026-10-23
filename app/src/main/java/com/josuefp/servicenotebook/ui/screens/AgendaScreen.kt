@@ -29,7 +29,6 @@ import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Search
@@ -39,11 +38,7 @@ import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -58,11 +53,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -95,6 +87,7 @@ import java.util.Locale
 @Composable
 fun AgendaScreen(
     appName: String = "Virna Nails",
+    onNavigateToAppointmentForm: (Long, Long) -> Unit = { _, _ -> },
     onNavigateBack: () -> Unit
 ) {
     val context = LocalContext.current
@@ -109,20 +102,13 @@ fun AgendaScreen(
 
     val allAppointments by viewModel.allAppointments.collectAsState()
     val appointmentsForSelectedDate by viewModel.appointmentsForSelectedDate.collectAsState()
-    val allClients by viewModel.allClients.collectAsState()
     val filteredClients by viewModel.filteredClients.collectAsState()
-    val allServices by viewModel.allServices.collectAsState()
     val clientSearchQuery by viewModel.clientSearchQuery.collectAsState()
 
     var showAddClientDialog by remember { mutableStateOf(false) }
     var editingClient by remember { mutableStateOf<ClientEntity?>(null) }
     var clientForHistory by remember { mutableStateOf<ClientEntity?>(null) }
 
-    var showAddAppointmentDialog by remember { mutableStateOf(false) }
-    var editingAppointment by remember { mutableStateOf<AppointmentWithDetails?>(null) }
-    var defaultClientForAppointment by remember { mutableStateOf<ClientEntity?>(null) }
-
-    var overlapConflict by remember { mutableStateOf<AppointmentWithDetails?>(null) }
     var clientToDelete by remember { mutableStateOf<ClientEntity?>(null) }
     var appointmentToDelete by remember { mutableStateOf<AppointmentEntity?>(null) }
 
@@ -155,19 +141,14 @@ fun AgendaScreen(
         onClientClick = { client ->
             clientForHistory = client
         },
-        onAddAppointmentForClient = { client ->
-            defaultClientForAppointment = client
-            editingAppointment = null
-            showAddAppointmentDialog = true
+        onAddAppointmentForClient = { _ ->
+            onNavigateToAppointmentForm(0L, selectedDateMillis)
         },
         onAddAppointmentClick = {
-            defaultClientForAppointment = null
-            editingAppointment = null
-            showAddAppointmentDialog = true
+            onNavigateToAppointmentForm(0L, selectedDateMillis)
         },
         onEditAppointmentClick = { appDetails ->
-            editingAppointment = appDetails
-            showAddAppointmentDialog = true
+            onNavigateToAppointmentForm(appDetails.appointment.id, appDetails.appointment.appointmentDate)
         },
         onDeleteAppointmentClick = { appEntity ->
             appointmentToDelete = appEntity
@@ -191,48 +172,6 @@ fun AgendaScreen(
             client = clientForHistory!!,
             appointments = allAppointments,
             onDismiss = { clientForHistory = null }
-        )
-    }
-
-    if (showAddAppointmentDialog) {
-        AddEditAppointmentDialog(
-            appointmentWithDetails = editingAppointment,
-            defaultClient = defaultClientForAppointment,
-            allClients = allClients,
-            allServices = allServices,
-            initialDateMillis = selectedDateMillis,
-            onDismiss = { showAddAppointmentDialog = false },
-            onConfirm = { appointmentEntity, serviceIds, scheduleReminder ->
-                viewModel.saveAppointmentWithServices(
-                    appointment = appointmentEntity,
-                    serviceIds = serviceIds,
-                    scheduleReminder = scheduleReminder,
-                    onOverlapError = { overlap ->
-                        overlapConflict = overlap
-                    },
-                    onSuccess = {
-                        showAddAppointmentDialog = false
-                    }
-                )
-            }
-        )
-    }
-
-    if (overlapConflict != null) {
-        AlertDialog(
-            onDismissRequest = { overlapConflict = null },
-            title = { Text("Solapamiento de Horario") },
-            text = {
-                val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
-                val startTime = timeFormat.format(Date(overlapConflict!!.appointment.appointmentDate))
-                val clientName = overlapConflict!!.client?.name ?: "Clienta"
-                Text("Existe un conflicto de horario con la cita de $clientName programada a las $startTime (${overlapConflict!!.appointment.durationMinutes} min). Por favor selecciona otro horario.")
-            },
-            confirmButton = {
-                Button(onClick = { overlapConflict = null }) {
-                    Text("Entendido")
-                }
-            }
         )
     }
 
@@ -984,281 +923,6 @@ fun AddEditClientDialog(
                 }
             ) {
                 Text(if (client == null) "Agregar" else "Guardar")
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Cancelar")
-            }
-        }
-    )
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun AddEditAppointmentDialog(
-    appointmentWithDetails: AppointmentWithDetails?,
-    defaultClient: ClientEntity?,
-    allClients: List<ClientEntity>,
-    allServices: List<ServiceEntity>,
-    initialDateMillis: Long,
-    onDismiss: () -> Unit,
-    onConfirm: (appointment: AppointmentEntity, serviceIds: List<Long>, scheduleReminder: Boolean) -> Unit
-) {
-    var selectedClient by remember {
-        mutableStateOf(appointmentWithDetails?.client ?: defaultClient ?: allClients.firstOrNull())
-    }
-
-    val selectedServiceIds = remember {
-        mutableStateListOf<Long>().apply {
-            val initialIds = appointmentWithDetails?.services?.map { it.id } ?: emptyList()
-            if (initialIds.isNotEmpty()) {
-                addAll(initialIds)
-            } else if (allServices.isNotEmpty()) {
-                add(allServices[0].id)
-            }
-        }
-    }
-
-    val calculatedDuration = remember(selectedServiceIds.toList(), allServices) {
-        allServices.filter { selectedServiceIds.contains(it.id) }.sumOf { it.estimatedDurationMinutes }.coerceAtLeast(30)
-    }
-
-    val calculatedPrice = remember(selectedServiceIds.toList(), allServices) {
-        allServices.filter { selectedServiceIds.contains(it.id) }.sumOf { it.basePrice }
-    }
-
-    var agreedPriceStr by remember {
-        mutableStateOf(appointmentWithDetails?.appointment?.agreedPrice?.toString() ?: calculatedPrice.toString())
-    }
-
-    var durationStr by remember {
-        mutableStateOf(appointmentWithDetails?.appointment?.durationMinutes?.toString() ?: calculatedDuration.toString())
-    }
-
-    LaunchedEffect(calculatedPrice, calculatedDuration) {
-        if (appointmentWithDetails == null) {
-            agreedPriceStr = calculatedPrice.toString()
-            durationStr = calculatedDuration.toString()
-        }
-    }
-
-    var notes by remember { mutableStateOf(appointmentWithDetails?.appointment?.notes ?: "") }
-    var scheduleReminder by remember { mutableStateOf(appointmentWithDetails?.appointment?.reminderScheduled ?: true) }
-
-    val cal = remember {
-        Calendar.getInstance().apply {
-            timeInMillis = appointmentWithDetails?.appointment?.appointmentDate ?: initialDateMillis
-            if (appointmentWithDetails == null) {
-                set(Calendar.HOUR_OF_DAY, 10)
-                set(Calendar.MINUTE, 0)
-            }
-        }
-    }
-
-    var hour by remember { mutableIntStateOf(cal.get(Calendar.HOUR_OF_DAY)) }
-    var minute by remember { mutableIntStateOf(cal.get(Calendar.MINUTE)) }
-
-    var isClientDropdownExpanded by remember { mutableStateOf(false) }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(if (appointmentWithDetails == null) "Agendar Nueva Cita" else "Editar Cita") },
-        text = {
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(10.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                item {
-                    if (errorMessage != null) {
-                        Text(errorMessage!!, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
-                    }
-
-                    Text("Clienta *", style = MaterialTheme.typography.labelMedium)
-                    ExposedDropdownMenuBox(
-                        expanded = isClientDropdownExpanded,
-                        onExpandedChange = { isClientDropdownExpanded = it }
-                    ) {
-                        OutlinedTextField(
-                            value = selectedClient?.name ?: "Seleccionar clienta...",
-                            onValueChange = {},
-                            readOnly = true,
-                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isClientDropdownExpanded) },
-                            modifier = Modifier
-                                .menuAnchor()
-                                .fillMaxWidth()
-                        )
-                        ExposedDropdownMenu(
-                            expanded = isClientDropdownExpanded,
-                            onDismissRequest = { isClientDropdownExpanded = false }
-                        ) {
-                            allClients.forEach { c ->
-                                DropdownMenuItem(
-                                    text = { Text(c.name) },
-                                    onClick = {
-                                        selectedClient = c
-                                        isClientDropdownExpanded = false
-                                    }
-                                )
-                            }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Text("Servicios a realizar (Selecciona uno o más) *", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
-                }
-
-                items(allServices, key = { it.id }) { service ->
-                    val isChecked = selectedServiceIds.contains(service.id)
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable {
-                                if (isChecked) {
-                                    if (selectedServiceIds.size > 1) {
-                                        selectedServiceIds.remove(service.id)
-                                    }
-                                } else {
-                                    selectedServiceIds.add(service.id)
-                                }
-                            }
-                            .padding(vertical = 4.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
-                            Checkbox(
-                                checked = isChecked,
-                                onCheckedChange = { checked ->
-                                    if (checked) {
-                                        selectedServiceIds.add(service.id)
-                                    } else {
-                                        if (selectedServiceIds.size > 1) {
-                                            selectedServiceIds.remove(service.id)
-                                        }
-                                    }
-                                }
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Column {
-                                Text(service.name, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
-                                Text("${service.estimatedDurationMinutes} min • $${service.basePrice}", style = MaterialTheme.typography.bodySmall)
-                            }
-                        }
-                    }
-                }
-
-                item {
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Text("Hora de inicio:", style = MaterialTheme.typography.labelMedium)
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        OutlinedTextField(
-                            value = String.format(Locale.getDefault(), "%02d", hour),
-                            onValueChange = { it.toIntOrNull()?.let { h -> if (h in 0..23) hour = h } },
-                            label = { Text("Hora (0-23)") },
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                            singleLine = true,
-                            modifier = Modifier.weight(1f)
-                        )
-                        Text(":", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleLarge)
-                        OutlinedTextField(
-                            value = String.format(Locale.getDefault(), "%02d", minute),
-                            onValueChange = { it.toIntOrNull()?.let { m -> if (m in 0..59) minute = m } },
-                            label = { Text("Minuto (0-59)") },
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                            singleLine = true,
-                            modifier = Modifier.weight(1f)
-                        )
-                    }
-
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        OutlinedTextField(
-                            value = durationStr,
-                            onValueChange = { durationStr = it },
-                            label = { Text("Duración Total (min)") },
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                            singleLine = true,
-                            modifier = Modifier.weight(1f)
-                        )
-                        OutlinedTextField(
-                            value = agreedPriceStr,
-                            onValueChange = { agreedPriceStr = it },
-                            label = { Text("Precio Acordado ($)") },
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                            singleLine = true,
-                            modifier = Modifier.weight(1f)
-                        )
-                    }
-
-                    OutlinedTextField(
-                        value = notes,
-                        onValueChange = { notes = it },
-                        label = { Text("Notas de la cita") },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.clickable { scheduleReminder = !scheduleReminder }
-                    ) {
-                        Checkbox(
-                            checked = scheduleReminder,
-                            onCheckedChange = { scheduleReminder = it }
-                        )
-                        Icon(Icons.Default.Notifications, contentDescription = null, modifier = Modifier.size(18.dp))
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text("Recordatorio local (30 min antes)", style = MaterialTheme.typography.bodyMedium)
-                    }
-                }
-            }
-        },
-        confirmButton = {
-            Button(
-                onClick = {
-                    val client = selectedClient
-                    val price = agreedPriceStr.toDoubleOrNull()
-                    val duration = durationStr.toIntOrNull()
-
-                    if (client == null) {
-                        errorMessage = "Debes seleccionar una clienta."
-                    } else if (selectedServiceIds.isEmpty()) {
-                        errorMessage = "Selecciona al menos un servicio."
-                    } else if (price == null || price < 0) {
-                        errorMessage = "Ingresa un precio válido."
-                    } else if (duration == null || duration <= 0) {
-                        errorMessage = "Ingresa una duración válida."
-                    } else {
-                        val appointmentCal = Calendar.getInstance().apply {
-                            timeInMillis = initialDateMillis
-                            set(Calendar.HOUR_OF_DAY, hour)
-                            set(Calendar.MINUTE, minute)
-                            set(Calendar.SECOND, 0)
-                            set(Calendar.MILLISECOND, 0)
-                        }
-
-                        val appointmentEntity = (appointmentWithDetails?.appointment ?: AppointmentEntity(
-                            clientId = client.id,
-                            serviceId = selectedServiceIds.firstOrNull(),
-                            appointmentDate = appointmentCal.timeInMillis
-                        )).copy(
-                            clientId = client.id,
-                            serviceId = selectedServiceIds.firstOrNull(),
-                            appointmentDate = appointmentCal.timeInMillis,
-                            durationMinutes = duration,
-                            agreedPrice = price,
-                            notes = notes.trim(),
-                            reminderScheduled = scheduleReminder
-                        )
-
-                        onConfirm(appointmentEntity, selectedServiceIds.toList(), scheduleReminder)
-                    }
-                }
-            ) {
-                Text(if (appointmentWithDetails == null) "Agendar" else "Guardar")
             }
         },
         dismissButton = {
