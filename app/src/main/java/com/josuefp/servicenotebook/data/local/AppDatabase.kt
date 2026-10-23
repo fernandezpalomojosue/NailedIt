@@ -28,7 +28,7 @@ import com.josuefp.servicenotebook.data.local.entity.ServiceMaterialEntity
         AppointmentEntity::class,
         AppConfigEntity::class,
     ],
-    version = 2,
+    version = 3,
     exportSchema = false,
 )
 abstract class AppDatabase : RoomDatabase() {

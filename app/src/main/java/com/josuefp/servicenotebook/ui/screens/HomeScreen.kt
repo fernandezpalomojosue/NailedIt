@@ -11,8 +11,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -66,64 +64,51 @@ fun HomeScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(16.dp),
+                .padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
                 text = "Bienvenida a $appName",
-                style = MaterialTheme.typography.headlineSmall
+                style = MaterialTheme.typography.headlineMedium
             )
-
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant
-                )
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp)
-                ) {
-                    Text(
-                        text = "Estado del Sistema",
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "• Persistencia local lista (Room)\n• Respaldo manual disponible\n• Funcionamiento 100% sin Internet\n• Nombre de app personalizable",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                }
-            }
 
             Spacer(modifier = Modifier.height(16.dp))
 
             Button(
                 onClick = onNavigateToInventory,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
             ) {
-                Text("Inventario de Productos")
+                Text("Inventario de Productos", style = MaterialTheme.typography.titleMedium)
             }
 
             Button(
                 onClick = onNavigateToCatalog,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
             ) {
-                Text("Catálogo y Calculadora")
+                Text("Catálogo y Calculadora", style = MaterialTheme.typography.titleMedium)
             }
 
             Button(
                 onClick = onNavigateToAgenda,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
             ) {
-                Text("Agenda y Citas")
+                Text("Agenda y Citas", style = MaterialTheme.typography.titleMedium)
             }
 
             Button(
                 onClick = onNavigateToBackup,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
             ) {
-                Text("Copias de Seguridad (Exportar / Restaurar)")
+                Text("Copias de Seguridad", style = MaterialTheme.typography.titleMedium)
             }
         }
     }
