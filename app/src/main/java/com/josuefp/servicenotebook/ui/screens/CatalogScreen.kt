@@ -284,7 +284,7 @@ fun CatalogScreenContent(
                                 Text("Calculadora en Vivo")
                             }
                         } else {
-                            Text("Calculadora en Vivo")
+                            Text("Cotización")
                         }
                     }
                 )
