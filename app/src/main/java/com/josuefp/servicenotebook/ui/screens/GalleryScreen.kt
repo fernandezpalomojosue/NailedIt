@@ -3,7 +3,6 @@ package com.josuefp.servicenotebook.ui.screens
 import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -290,8 +289,8 @@ fun AddWorkPhotoDialog(
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
     val photoPickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.PickVisualMedia()
-    ) { uri ->
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
         if (uri != null) {
             selectedUri = uri
             errorMessage = null
@@ -308,12 +307,12 @@ fun AddWorkPhotoDialog(
                 }
 
                 Button(
-                    onClick = { photoPickerLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
+                    onClick = { photoPickerLauncher.launch("image/*") },
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Icon(Icons.Default.Add, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(if (selectedUri == null) "Seleccionar Foto" else "Cambiar Foto")
+                    Text(if (selectedUri == null) "Seleccionar Foto de Galería" else "Cambiar Foto")
                 }
 
                 if (selectedUri != null) {
