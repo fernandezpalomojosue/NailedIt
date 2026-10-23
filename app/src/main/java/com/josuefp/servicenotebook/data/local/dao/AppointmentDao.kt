@@ -7,6 +7,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import com.josuefp.servicenotebook.data.local.entity.AppointmentEntity
+import com.josuefp.servicenotebook.data.local.entity.AppointmentServiceEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -37,4 +38,16 @@ interface AppointmentDao {
 
     @Query("SELECT * FROM appointments")
     suspend fun getAllAppointmentsList(): List<AppointmentEntity>
+
+    @Query("SELECT * FROM appointment_services WHERE appointmentId = :appointmentId")
+    suspend fun getServicesForAppointment(appointmentId: Long): List<AppointmentServiceEntity>
+
+    @Query("SELECT * FROM appointment_services")
+    suspend fun getAllAppointmentServicesList(): List<AppointmentServiceEntity>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAppointmentServices(list: List<AppointmentServiceEntity>)
+
+    @Query("DELETE FROM appointment_services WHERE appointmentId = :appointmentId")
+    suspend fun deleteServicesForAppointment(appointmentId: Long)
 }

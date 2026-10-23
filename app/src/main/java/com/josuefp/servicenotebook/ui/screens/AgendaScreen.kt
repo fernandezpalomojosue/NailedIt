@@ -58,9 +58,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -114,6 +116,7 @@ fun AgendaScreen(
 
     var showAddClientDialog by remember { mutableStateOf(false) }
     var editingClient by remember { mutableStateOf<ClientEntity?>(null) }
+    var clientForHistory by remember { mutableStateOf<ClientEntity?>(null) }
 
     var showAddAppointmentDialog by remember { mutableStateOf(false) }
     var editingAppointment by remember { mutableStateOf<AppointmentWithDetails?>(null) }
@@ -149,6 +152,9 @@ fun AgendaScreen(
         onDeleteClientClick = { client ->
             clientToDelete = client
         },
+        onClientClick = { client ->
+            clientForHistory = client
+        },
         onAddAppointmentForClient = { client ->
             defaultClientForAppointment = client
             editingAppointment = null
@@ -180,6 +186,14 @@ fun AgendaScreen(
         )
     }
 
+    if (clientForHistory != null) {
+        ClientHistoryDialog(
+            client = clientForHistory!!,
+            appointments = allAppointments,
+            onDismiss = { clientForHistory = null }
+        )
+    }
+
     if (showAddAppointmentDialog) {
         AddEditAppointmentDialog(
             appointmentWithDetails = editingAppointment,
@@ -188,9 +202,10 @@ fun AgendaScreen(
             allServices = allServices,
             initialDateMillis = selectedDateMillis,
             onDismiss = { showAddAppointmentDialog = false },
-            onConfirm = { appointmentEntity, scheduleReminder ->
-                viewModel.saveAppointment(
+            onConfirm = { appointmentEntity, serviceIds, scheduleReminder ->
+                viewModel.saveAppointmentWithServices(
                     appointment = appointmentEntity,
+                    serviceIds = serviceIds,
                     scheduleReminder = scheduleReminder,
                     onOverlapError = { overlap ->
                         overlapConflict = overlap
@@ -284,6 +299,7 @@ fun AgendaScreenContent(
     onAddClientClick: () -> Unit,
     onEditClientClick: (ClientEntity) -> Unit,
     onDeleteClientClick: (ClientEntity) -> Unit,
+    onClientClick: (ClientEntity) -> Unit,
     onAddAppointmentForClient: (ClientEntity) -> Unit,
     onAddAppointmentClick: () -> Unit,
     onEditAppointmentClick: (AppointmentWithDetails) -> Unit,
@@ -394,12 +410,92 @@ fun AgendaScreenContent(
                         onSearchQueryChange = onClientSearchQueryChange,
                         onEditClick = onEditClientClick,
                         onDeleteClick = onDeleteClientClick,
-                        onAddAppointmentClick = onAddAppointmentForClient
+                        onAddAppointmentClick = onAddAppointmentForClient,
+                        onClientClick = onClientClick
                     )
                 }
             }
         }
     }
+}
+
+@Composable
+fun ClientHistoryDialog(
+    client: ClientEntity,
+    appointments: List<AppointmentWithDetails>,
+    onDismiss: () -> Unit
+) {
+    val clientAppointments = appointments.filter { it.client?.id == client.id }
+    val totalSpent = clientAppointments.filter { it.appointment.status != "CANCELLED" }.sumOf { it.appointment.agreedPrice }
+    val dateFormat = remember { SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Historial: ${client.name}") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                Text("Teléfono: ${client.phone.ifBlank { "No registrado" }}", style = MaterialTheme.typography.bodyMedium)
+                Text(
+                    text = "Total invertido: $${String.format(Locale.getDefault(), "%.2f", totalSpent)} (${clientAppointments.size} citas)",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                if (client.notes.isNotBlank()) {
+                    Text("Notas: ${client.notes}", style = MaterialTheme.typography.bodySmall)
+                }
+                Spacer(modifier = Modifier.height(4.dp))
+                Text("Historial de Citas:", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+
+                if (clientAppointments.isEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(100.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "No hay citas registradas para esta clienta.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                } else {
+                    LazyColumn(
+                        verticalArrangement = Arrangement.spacedBy(6.dp),
+                        modifier = Modifier.height(240.dp)
+                    ) {
+                        items(clientAppointments, key = { it.appointment.id }) { appDetails ->
+                            val app = appDetails.appointment
+                            val servicesText = appDetails.services.joinToString(", ") { it.name }
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+                            ) {
+                                Column(modifier = Modifier.padding(10.dp)) {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween
+                                    ) {
+                                        Text(dateFormat.format(Date(app.appointmentDate)), style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold)
+                                        Text(app.status, style = MaterialTheme.typography.labelSmall)
+                                    }
+                                    Spacer(modifier = Modifier.height(2.dp))
+                                    Text(servicesText.ifBlank { "Servicio personalizado" }, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
+                                    Text("$${String.format(Locale.getDefault(), "%.2f", app.agreedPrice)}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            Button(onClick = onDismiss) {
+                Text("Cerrar")
+            }
+        }
+    )
 }
 
 @Composable
@@ -606,7 +702,8 @@ fun DailyAppointmentsSection(
                 items(appointments, key = { it.appointment.id }) { appDetails ->
                     val app = appDetails.appointment
                     val clientName = appDetails.client?.name ?: "Clienta desasociada"
-                    val serviceName = appDetails.service?.name ?: "Servicio personalizado"
+                    val serviceNames = appDetails.services.joinToString(", ") { it.name }
+                    val servicesText = if (serviceNames.isNotBlank()) serviceNames else "Servicio personalizado"
                     val startTime = timeFormat.format(Date(app.appointmentDate))
                     val endTime = timeFormat.format(Date(app.appointmentDate + app.durationMinutes * 60 * 1000L))
 
@@ -656,7 +753,7 @@ fun DailyAppointmentsSection(
                             )
 
                             Text(
-                                text = "$serviceName • $${String.format(Locale.getDefault(), "%.2f", app.agreedPrice)}",
+                                text = "$servicesText • $${String.format(Locale.getDefault(), "%.2f", app.agreedPrice)}",
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -710,7 +807,8 @@ fun ClientsListSection(
     onSearchQueryChange: (String) -> Unit,
     onEditClick: (ClientEntity) -> Unit,
     onDeleteClick: (ClientEntity) -> Unit,
-    onAddAppointmentClick: (ClientEntity) -> Unit
+    onAddAppointmentClick: (ClientEntity) -> Unit,
+    onClientClick: (ClientEntity) -> Unit
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
         OutlinedTextField(
@@ -753,7 +851,9 @@ fun ClientsListSection(
             ) {
                 items(clients, key = { it.id }) { client ->
                     Card(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { onClientClick(client) },
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
@@ -792,13 +892,23 @@ fun ClientsListSection(
 
                             Spacer(modifier = Modifier.height(8.dp))
 
-                            OutlinedButton(
-                                onClick = { onAddAppointmentClick(client) },
-                                modifier = Modifier.align(Alignment.End)
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Icon(Icons.Default.Add, contentDescription = null)
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text("Agendar Cita")
+                                Text(
+                                    text = "Toca para ver historial",
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                                OutlinedButton(
+                                    onClick = { onAddAppointmentClick(client) }
+                                ) {
+                                    Icon(Icons.Default.Add, contentDescription = null)
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text("Agendar")
+                                }
                             }
                         }
                     }
@@ -893,29 +1003,44 @@ fun AddEditAppointmentDialog(
     allServices: List<ServiceEntity>,
     initialDateMillis: Long,
     onDismiss: () -> Unit,
-    onConfirm: (appointment: AppointmentEntity, scheduleReminder: Boolean) -> Unit
+    onConfirm: (appointment: AppointmentEntity, serviceIds: List<Long>, scheduleReminder: Boolean) -> Unit
 ) {
     var selectedClient by remember {
         mutableStateOf(appointmentWithDetails?.client ?: defaultClient ?: allClients.firstOrNull())
     }
-    var selectedService by remember {
-        mutableStateOf(appointmentWithDetails?.service ?: allServices.firstOrNull())
+
+    val selectedServiceIds = remember {
+        mutableStateListOf<Long>().apply {
+            val initialIds = appointmentWithDetails?.services?.map { it.id } ?: emptyList()
+            if (initialIds.isNotEmpty()) {
+                addAll(initialIds)
+            } else if (allServices.isNotEmpty()) {
+                add(allServices[0].id)
+            }
+        }
+    }
+
+    val calculatedDuration = remember(selectedServiceIds.toList(), allServices) {
+        allServices.filter { selectedServiceIds.contains(it.id) }.sumOf { it.estimatedDurationMinutes }.coerceAtLeast(30)
+    }
+
+    val calculatedPrice = remember(selectedServiceIds.toList(), allServices) {
+        allServices.filter { selectedServiceIds.contains(it.id) }.sumOf { it.basePrice }
     }
 
     var agreedPriceStr by remember {
-        mutableStateOf(
-            appointmentWithDetails?.appointment?.agreedPrice?.toString()
-                ?: selectedService?.basePrice?.toString()
-                ?: "30.0"
-        )
+        mutableStateOf(appointmentWithDetails?.appointment?.agreedPrice?.toString() ?: calculatedPrice.toString())
     }
 
     var durationStr by remember {
-        mutableStateOf(
-            appointmentWithDetails?.appointment?.durationMinutes?.toString()
-                ?: selectedService?.estimatedDurationMinutes?.toString()
-                ?: "60"
-        )
+        mutableStateOf(appointmentWithDetails?.appointment?.durationMinutes?.toString() ?: calculatedDuration.toString())
+    }
+
+    LaunchedEffect(calculatedPrice, calculatedDuration) {
+        if (appointmentWithDetails == null) {
+            agreedPriceStr = calculatedPrice.toString()
+            durationStr = calculatedDuration.toString()
+        }
     }
 
     var notes by remember { mutableStateOf(appointmentWithDetails?.appointment?.notes ?: "") }
@@ -935,7 +1060,6 @@ fun AddEditAppointmentDialog(
     var minute by remember { mutableIntStateOf(cal.get(Calendar.MINUTE)) }
 
     var isClientDropdownExpanded by remember { mutableStateOf(false) }
-    var isServiceDropdownExpanded by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
     AlertDialog(
@@ -982,38 +1106,50 @@ fun AddEditAppointmentDialog(
                     }
 
                     Spacer(modifier = Modifier.height(6.dp))
-                    Text("Servicio *", style = MaterialTheme.typography.labelMedium)
-                    ExposedDropdownMenuBox(
-                        expanded = isServiceDropdownExpanded,
-                        onExpandedChange = { isServiceDropdownExpanded = it }
-                    ) {
-                        OutlinedTextField(
-                            value = selectedService?.name ?: "Servicio personalizado / Sin catálogo",
-                            onValueChange = {},
-                            readOnly = true,
-                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isServiceDropdownExpanded) },
-                            modifier = Modifier
-                                .menuAnchor()
-                                .fillMaxWidth()
-                        )
-                        ExposedDropdownMenu(
-                            expanded = isServiceDropdownExpanded,
-                            onDismissRequest = { isServiceDropdownExpanded = false }
-                        ) {
-                            allServices.forEach { s ->
-                                DropdownMenuItem(
-                                    text = { Text("${s.name} ($${s.basePrice})") },
-                                    onClick = {
-                                        selectedService = s
-                                        agreedPriceStr = s.basePrice.toString()
-                                        durationStr = s.estimatedDurationMinutes.toString()
-                                        isServiceDropdownExpanded = false
+                    Text("Servicios a realizar (Selecciona uno o más) *", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+                }
+
+                items(allServices, key = { it.id }) { service ->
+                    val isChecked = selectedServiceIds.contains(service.id)
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                if (isChecked) {
+                                    if (selectedServiceIds.size > 1) {
+                                        selectedServiceIds.remove(service.id)
                                     }
-                                )
+                                } else {
+                                    selectedServiceIds.add(service.id)
+                                }
+                            }
+                            .padding(vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
+                            Checkbox(
+                                checked = isChecked,
+                                onCheckedChange = { checked ->
+                                    if (checked) {
+                                        selectedServiceIds.add(service.id)
+                                    } else {
+                                        if (selectedServiceIds.size > 1) {
+                                            selectedServiceIds.remove(service.id)
+                                        }
+                                    }
+                                }
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Column {
+                                Text(service.name, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
+                                Text("${service.estimatedDurationMinutes} min • $${service.basePrice}", style = MaterialTheme.typography.bodySmall)
                             }
                         }
                     }
+                }
 
+                item {
                     Spacer(modifier = Modifier.height(6.dp))
                     Text("Hora de inicio:", style = MaterialTheme.typography.labelMedium)
                     Row(
@@ -1043,7 +1179,7 @@ fun AddEditAppointmentDialog(
                         OutlinedTextField(
                             value = durationStr,
                             onValueChange = { durationStr = it },
-                            label = { Text("Duración (min)") },
+                            label = { Text("Duración Total (min)") },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             singleLine = true,
                             modifier = Modifier.weight(1f)
@@ -1089,6 +1225,8 @@ fun AddEditAppointmentDialog(
 
                     if (client == null) {
                         errorMessage = "Debes seleccionar una clienta."
+                    } else if (selectedServiceIds.isEmpty()) {
+                        errorMessage = "Selecciona al menos un servicio."
                     } else if (price == null || price < 0) {
                         errorMessage = "Ingresa un precio válido."
                     } else if (duration == null || duration <= 0) {
@@ -1104,11 +1242,11 @@ fun AddEditAppointmentDialog(
 
                         val appointmentEntity = (appointmentWithDetails?.appointment ?: AppointmentEntity(
                             clientId = client.id,
-                            serviceId = selectedService?.id,
+                            serviceId = selectedServiceIds.firstOrNull(),
                             appointmentDate = appointmentCal.timeInMillis
                         )).copy(
                             clientId = client.id,
-                            serviceId = selectedService?.id,
+                            serviceId = selectedServiceIds.firstOrNull(),
                             appointmentDate = appointmentCal.timeInMillis,
                             durationMinutes = duration,
                             agreedPrice = price,
@@ -1116,7 +1254,7 @@ fun AddEditAppointmentDialog(
                             reminderScheduled = scheduleReminder
                         )
 
-                        onConfirm(appointmentEntity, scheduleReminder)
+                        onConfirm(appointmentEntity, selectedServiceIds.toList(), scheduleReminder)
                     }
                 }
             ) {
@@ -1145,14 +1283,14 @@ fun AgendaScreenPreview() {
                 AppointmentWithDetails(
                     appointment = AppointmentEntity(id = 1, clientId = 1, serviceId = 1, appointmentDate = System.currentTimeMillis(), agreedPrice = 35.0, status = "CONFIRMED"),
                     client = ClientEntity(id = 1, name = "María López", phone = "555-1234"),
-                    service = ServiceEntity(id = 1, name = "Manicura Rusa")
+                    services = listOf(ServiceEntity(id = 1, name = "Manicura Rusa"))
                 )
             ),
             appointmentsForSelectedDate = listOf(
                 AppointmentWithDetails(
                     appointment = AppointmentEntity(id = 1, clientId = 1, serviceId = 1, appointmentDate = System.currentTimeMillis(), agreedPrice = 35.0, status = "CONFIRMED"),
                     client = ClientEntity(id = 1, name = "María López", phone = "555-1234"),
-                    service = ServiceEntity(id = 1, name = "Manicura Rusa")
+                    services = listOf(ServiceEntity(id = 1, name = "Manicura Rusa"))
                 )
             ),
             clients = listOf(
@@ -1167,6 +1305,7 @@ fun AgendaScreenPreview() {
             onAddClientClick = {},
             onEditClientClick = {},
             onDeleteClientClick = {},
+            onClientClick = {},
             onAddAppointmentForClient = {},
             onAddAppointmentClick = {},
             onEditAppointmentClick = {},

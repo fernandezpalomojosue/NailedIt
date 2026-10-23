@@ -60,7 +60,7 @@ class AgendaRepositoryTest {
             set(2025, Calendar.MAY, 15, 10, 0, 0)
         }.timeInMillis
 
-        repository.saveAppointment(
+        repository.saveAppointmentWithServices(
             AppointmentEntity(
                 clientId = clientId,
                 serviceId = null,
@@ -68,7 +68,8 @@ class AgendaRepositoryTest {
                 durationMinutes = 60,
                 agreedPrice = 30.0,
                 status = "CONFIRMED"
-            )
+            ),
+            emptyList()
         )
 
         val overlapTime1 = baseTime + (30 * 60 * 1000L)
@@ -90,7 +91,7 @@ class AgendaRepositoryTest {
     @Test
     fun updateAppointmentStatus() = runBlocking {
         val clientId = repository.saveClient(ClientEntity(name = "Sofia Rivas", phone = "555-1111"))
-        val appId = repository.saveAppointment(
+        val appId = repository.saveAppointmentWithServices(
             AppointmentEntity(
                 clientId = clientId,
                 serviceId = null,
@@ -98,7 +99,8 @@ class AgendaRepositoryTest {
                 durationMinutes = 60,
                 agreedPrice = 40.0,
                 status = "PENDING"
-            )
+            ),
+            emptyList()
         )
 
         repository.updateAppointmentStatus(appId, "COMPLETED")
@@ -126,7 +128,7 @@ class AgendaRepositoryTest {
         )
 
         val clientId = repository.saveClient(ClientEntity(name = "Carla Ruiz", phone = "555-3333"))
-        val appId = repository.saveAppointment(
+        val appId = repository.saveAppointmentWithServices(
             AppointmentEntity(
                 clientId = clientId,
                 serviceId = serviceId,
@@ -134,7 +136,8 @@ class AgendaRepositoryTest {
                 durationMinutes = 60,
                 agreedPrice = 40.0,
                 status = "CONFIRMED"
-            )
+            ),
+            listOf(serviceId)
         )
 
         repository.updateAppointmentStatus(appId, "COMPLETED")

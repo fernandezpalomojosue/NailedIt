@@ -16,6 +16,7 @@ import com.josuefp.servicenotebook.ui.screens.BackupScreen
 import com.josuefp.servicenotebook.ui.screens.CatalogScreen
 import com.josuefp.servicenotebook.ui.screens.HomeScreen
 import com.josuefp.servicenotebook.ui.screens.InventoryScreen
+import com.josuefp.servicenotebook.ui.screens.ReportsScreen
 import com.josuefp.servicenotebook.ui.viewmodel.SettingsViewModel
 
 @Composable
@@ -39,7 +40,8 @@ fun AppNavHost(
                 onNavigateToInventory = { navController.navigate(NavRoute.Inventory.route) },
                 onNavigateToCatalog = { navController.navigate(NavRoute.Catalog.route) },
                 onNavigateToAgenda = { navController.navigate(NavRoute.Agenda.route) },
-                onNavigateToBackup = { navController.navigate(NavRoute.Backup.route) }
+                onNavigateToBackup = { navController.navigate(NavRoute.Backup.route) },
+                onNavigateToReports = { navController.navigate(NavRoute.Reports.route) }
             )
         }
         composable(NavRoute.Inventory.route) {
@@ -62,6 +64,12 @@ fun AppNavHost(
         }
         composable(NavRoute.Backup.route) {
             BackupScreen(
+                appName = appName,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+        composable(NavRoute.Reports.route) {
+            ReportsScreen(
                 appName = appName,
                 onNavigateBack = { navController.popBackStack() }
             )

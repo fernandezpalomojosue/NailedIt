@@ -12,6 +12,7 @@ import com.josuefp.servicenotebook.data.local.dao.ProductDao
 import com.josuefp.servicenotebook.data.local.dao.ServiceDao
 import com.josuefp.servicenotebook.data.local.entity.AppConfigEntity
 import com.josuefp.servicenotebook.data.local.entity.AppointmentEntity
+import com.josuefp.servicenotebook.data.local.entity.AppointmentServiceEntity
 import com.josuefp.servicenotebook.data.local.entity.ClientEntity
 import com.josuefp.servicenotebook.data.local.entity.InventoryMovementEntity
 import com.josuefp.servicenotebook.data.local.entity.ProductEntity
@@ -26,9 +27,10 @@ import com.josuefp.servicenotebook.data.local.entity.ServiceMaterialEntity
         ServiceMaterialEntity::class,
         ClientEntity::class,
         AppointmentEntity::class,
+        AppointmentServiceEntity::class,
         AppConfigEntity::class,
     ],
-    version = 3,
+    version = 4,
     exportSchema = false,
 )
 abstract class AppDatabase : RoomDatabase() {

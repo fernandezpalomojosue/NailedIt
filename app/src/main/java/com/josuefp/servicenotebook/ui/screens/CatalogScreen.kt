@@ -725,7 +725,7 @@ fun ServiceCard(
                 Button(onClick = onAddToQuoteClick) {
                     Icon(Icons.Default.Add, contentDescription = null)
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("+ Cotizar")
+                    Text("Cotizar")
                 }
 
                 Row {

@@ -40,7 +40,8 @@ fun HomeScreen(
     onNavigateToInventory: () -> Unit,
     onNavigateToCatalog: () -> Unit,
     onNavigateToAgenda: () -> Unit,
-    onNavigateToBackup: () -> Unit
+    onNavigateToBackup: () -> Unit,
+    onNavigateToReports: () -> Unit
 ) {
     var showRenameDialog by remember { mutableStateOf(false) }
 
@@ -100,6 +101,15 @@ fun HomeScreen(
                     .height(56.dp)
             ) {
                 Text("Agenda y Citas", style = MaterialTheme.typography.titleMedium)
+            }
+
+            Button(
+                onClick = onNavigateToReports,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
+            ) {
+                Text("Reportes Financieros", style = MaterialTheme.typography.titleMedium)
             }
 
             Button(
@@ -182,7 +192,8 @@ fun HomeScreenPreview() {
             onNavigateToInventory = {},
             onNavigateToCatalog = {},
             onNavigateToAgenda = {},
-            onNavigateToBackup = {}
+            onNavigateToBackup = {},
+            onNavigateToReports = {}
         )
     }
 }

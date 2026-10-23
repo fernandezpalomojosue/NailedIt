@@ -104,8 +104,9 @@ class AgendaViewModel(
         }
     }
 
-    fun saveAppointment(
+    fun saveAppointmentWithServices(
         appointment: AppointmentEntity,
+        serviceIds: List<Long>,
         scheduleReminder: Boolean,
         onOverlapError: (AppointmentWithDetails) -> Unit,
         onSuccess: () -> Unit
@@ -122,7 +123,7 @@ class AgendaViewModel(
                 return@launch
             }
 
-            val savedId = repository.saveAppointment(appointment)
+            val savedId = repository.saveAppointmentWithServices(appointment, serviceIds)
 
             if (scheduleReminder && notificationScheduler != null) {
                 val reminderTime = appointment.appointmentDate - (30 * 60 * 1000L)

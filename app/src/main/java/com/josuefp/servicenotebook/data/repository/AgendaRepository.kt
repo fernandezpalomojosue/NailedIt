@@ -2,12 +2,14 @@ package com.josuefp.servicenotebook.data.repository
 
 import com.josuefp.servicenotebook.data.local.AppDatabase
 import com.josuefp.servicenotebook.data.local.entity.AppointmentEntity
+import com.josuefp.servicenotebook.data.local.entity.AppointmentServiceEntity
 import com.josuefp.servicenotebook.data.local.entity.ClientEntity
 import com.josuefp.servicenotebook.data.local.entity.InventoryMovementEntity
 import com.josuefp.servicenotebook.data.local.entity.ServiceEntity
 import com.josuefp.servicenotebook.data.local.model.AppointmentWithDetails
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.runBlocking
 
 class AgendaRepository(private val database: AppDatabase) {
 
@@ -42,12 +44,23 @@ class AgendaRepository(private val database: AppDatabase) {
         return combine(appointmentsFlow, clientsFlow, servicesFlow) { appointments, clients, services ->
             val clientMap = clients.associateBy { it.id }
             val serviceMap = services.associateBy { it.id }
+            val allAppServices = runBlocking { appointmentDao.getAllAppointmentServicesList() }
+            val appServicesMap = allAppServices.groupBy({ it.appointmentId }, { it.serviceId })
 
             appointments.map { app ->
+                val serviceIds = appServicesMap[app.id] ?: emptyList()
+                val matchedServices = serviceIds.mapNotNull { serviceMap[it] }
+
+                val finalServices = if (matchedServices.isEmpty() && app.serviceId != null) {
+                    serviceMap[app.serviceId]?.let { listOf(it) } ?: emptyList()
+                } else {
+                    matchedServices
+                }
+
                 AppointmentWithDetails(
                     appointment = app,
                     client = clientMap[app.clientId],
-                    service = app.serviceId?.let { serviceMap[it] }
+                    services = finalServices
                 )
             }
         }
@@ -55,13 +68,31 @@ class AgendaRepository(private val database: AppDatabase) {
 
     suspend fun getAppointmentById(id: Long): AppointmentEntity? = appointmentDao.getAppointmentById(id)
 
-    suspend fun saveAppointment(appointment: AppointmentEntity): Long {
-        return if (appointment.id == 0L) {
+    suspend fun saveAppointmentWithServices(
+        appointment: AppointmentEntity,
+        serviceIds: List<Long>
+    ): Long {
+        val appointmentId = if (appointment.id == 0L) {
             appointmentDao.insertAppointment(appointment)
         } else {
             appointmentDao.updateAppointment(appointment)
             appointment.id
         }
+
+        appointmentDao.deleteServicesForAppointment(appointmentId)
+        val serviceMap = serviceDao.getAllServicesList().associateBy { it.id }
+        val appServiceEntities = serviceIds.map { sId ->
+            AppointmentServiceEntity(
+                appointmentId = appointmentId,
+                serviceId = sId,
+                priceAtBooking = serviceMap[sId]?.basePrice ?: 0.0
+            )
+        }
+        if (appServiceEntities.isNotEmpty()) {
+            appointmentDao.insertAppointmentServices(appServiceEntities)
+        }
+
+        return appointmentId
     }
 
     suspend fun updateAppointmentStatus(appointmentId: Long, newStatus: String) {
@@ -70,35 +101,45 @@ class AgendaRepository(private val database: AppDatabase) {
             val oldStatus = appointment.status
             appointmentDao.updateAppointment(appointment.copy(status = newStatus))
 
-            if (newStatus == "COMPLETED" && oldStatus != "COMPLETED" && appointment.serviceId != null) {
-                consumeMaterialsForService(appointment.serviceId)
+            if (newStatus == "COMPLETED" && oldStatus != "COMPLETED") {
+                consumeMaterialsForAppointment(appointmentId)
             }
         }
     }
 
-    private suspend fun consumeMaterialsForService(serviceId: Long) {
-        val materials = serviceDao.getMaterialsForServiceList(serviceId)
+    private suspend fun consumeMaterialsForAppointment(appointmentId: Long) {
+        val appServices = appointmentDao.getServicesForAppointment(appointmentId)
         val productDao = database.productDao()
         val movementDao = database.inventoryMovementDao()
 
-        for (mat in materials) {
-            val product = productDao.getProductById(mat.productId)
-            if (product != null) {
-                val newStock = (product.stockQuantity - mat.estimatedQuantity).coerceAtLeast(0.0)
-                productDao.updateProduct(
-                    product.copy(
-                        stockQuantity = newStock,
-                        updatedAt = System.currentTimeMillis()
+        val serviceIds = if (appServices.isEmpty()) {
+            val app = appointmentDao.getAppointmentById(appointmentId)
+            app?.serviceId?.let { listOf(it) } ?: emptyList()
+        } else {
+            appServices.map { it.serviceId }
+        }
+
+        for (sId in serviceIds) {
+            val materials = serviceDao.getMaterialsForServiceList(sId)
+            for (mat in materials) {
+                val product = productDao.getProductById(mat.productId)
+                if (product != null) {
+                    val newStock = (product.stockQuantity - mat.estimatedQuantity).coerceAtLeast(0.0)
+                    productDao.updateProduct(
+                        product.copy(
+                            stockQuantity = newStock,
+                            updatedAt = System.currentTimeMillis()
+                        )
                     )
-                )
-                movementDao.insertMovement(
-                    InventoryMovementEntity(
-                        productId = mat.productId,
-                        movementType = "EXIT",
-                        quantity = mat.estimatedQuantity,
-                        reason = "Consumo automático por servicio realizado (Cita)"
+                    movementDao.insertMovement(
+                        InventoryMovementEntity(
+                            productId = mat.productId,
+                            movementType = "EXIT",
+                            quantity = mat.estimatedQuantity,
+                            reason = "Consumo automático por servicio realizado (Cita)"
+                        )
                     )
-                )
+                }
             }
         }
     }
@@ -116,6 +157,7 @@ class AgendaRepository(private val database: AppDatabase) {
         val allAppointments = appointmentDao.getAllAppointmentsList()
         val clientMap = clientDao.getAllClientsList().associateBy { it.id }
         val serviceMap = serviceDao.getAllServicesList().associateBy { it.id }
+        val allAppServices = appointmentDao.getAllAppointmentServicesList().groupBy({ it.appointmentId }, { it.serviceId })
 
         for (app in allAppointments) {
             if (app.id == excludeAppointmentId || app.status == "CANCELLED") continue
@@ -124,10 +166,11 @@ class AgendaRepository(private val database: AppDatabase) {
             val appEnd = appStart + (app.durationMinutes * 60 * 1000L)
 
             if (startMillis < appEnd && endMillis > appStart) {
+                val sIds = allAppServices[app.id] ?: app.serviceId?.let { listOf(it) } ?: emptyList()
                 return AppointmentWithDetails(
                     appointment = app,
                     client = clientMap[app.clientId],
-                    service = app.serviceId?.let { serviceMap[it] }
+                    services = sIds.mapNotNull { serviceMap[it] }
                 )
             }
         }
