@@ -65,6 +65,20 @@ val CoralDarkColorScheme = darkColorScheme(
     onPrimaryContainer = CoralOnPrimaryContainerDark
 )
 
+val BlueLightColorScheme = lightColorScheme(
+    primary = BluePrimaryLight,
+    primaryContainer = BluePrimaryContainerLight,
+    onPrimaryContainer = BlueOnPrimaryContainerLight,
+    secondary = BlueSecondaryLight,
+    onPrimary = Color.White
+)
+
+val BlueDarkColorScheme = darkColorScheme(
+    primary = BluePrimaryDark,
+    primaryContainer = BluePrimaryContainerDark,
+    onPrimaryContainer = BlueOnPrimaryContainerDark
+)
+
 val ElegantLightColorScheme = lightColorScheme(
     primary = ElegantPrimaryLight,
     primaryContainer = ElegantPrimaryContainerLight,
@@ -88,6 +102,7 @@ fun ServiceNotebookTheme(
         "PURPLE" -> if (darkTheme) PurpleDarkColorScheme else PurpleLightColorScheme
         "TEAL" -> if (darkTheme) TealDarkColorScheme else TealLightColorScheme
         "CORAL" -> if (darkTheme) CoralDarkColorScheme else CoralLightColorScheme
+        "BLUE" -> if (darkTheme) BlueDarkColorScheme else BlueLightColorScheme
         "ELEGANT_DARK" -> if (darkTheme) ElegantDarkColorScheme else ElegantLightColorScheme
         else -> if (darkTheme) RoseDarkColorScheme else RoseLightColorScheme
     }

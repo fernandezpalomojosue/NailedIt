@@ -39,6 +39,16 @@ val CoralPrimaryDark = Color(0xFFFFAB91)
 val CoralPrimaryContainerDark = Color(0xFFBF360C)
 val CoralOnPrimaryContainerDark = Color(0xFFFBE9E7)
 
+// BLUE
+val BluePrimaryLight = Color(0xFF1E88E5)
+val BluePrimaryContainerLight = Color(0xFFE3F2FD)
+val BlueOnPrimaryContainerLight = Color(0xFF0D47A1)
+val BlueSecondaryLight = Color(0xFF1565C0)
+
+val BluePrimaryDark = Color(0xFF90CAF9)
+val BluePrimaryContainerDark = Color(0xFF0D47A1)
+val BlueOnPrimaryContainerDark = Color(0xFFE3F2FD)
+
 // ELEGANT DARK
 val ElegantPrimaryLight = Color(0xFF37474F)
 val ElegantPrimaryContainerLight = Color(0xFFECEFF1)

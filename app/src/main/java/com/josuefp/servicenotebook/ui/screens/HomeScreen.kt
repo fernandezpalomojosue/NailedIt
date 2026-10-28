@@ -177,6 +177,7 @@ fun AppSettingsDialog(
         "PURPLE" to ("Púrpura / Lavanda 🪻" to Color(0xFF8E24AA)),
         "TEAL" to ("Turquesa / Menta 🌿" to Color(0xFF00897B)),
         "CORAL" to ("Coral Cálido 🍑" to Color(0xFFE64A19)),
+        "BLUE" to ("Azul Océano 💙" to Color(0xFF1E88E5)),
         "ELEGANT_DARK" to ("Elegante Oscuro 🖤" to Color(0xFF37474F))
     )
 
