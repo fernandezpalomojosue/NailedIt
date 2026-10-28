@@ -4,18 +4,38 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.josuefp.servicenotebook.data.repository.SettingsRepository
-import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class SettingsViewModel(private val repository: SettingsRepository) : ViewModel() {
-    val appName: StateFlow<String> = repository.appName
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "Virna Nails")
+
+    private val _appName = MutableStateFlow("Virna Nails")
+    val appName: StateFlow<String> = _appName
+
+    private val _themePalette = MutableStateFlow("ROSE")
+    val themePalette: StateFlow<String> = _themePalette
+
+    init {
+        viewModelScope.launch {
+            val config = repository.getAppConfigOnce()
+            _appName.value = config.appName
+            _themePalette.value = config.themePalette
+        }
+    }
 
     fun updateAppName(newName: String) {
+        val trimmed = newName.trim().ifBlank { "Virna Nails" }
+        _appName.value = trimmed
         viewModelScope.launch {
-            repository.updateAppName(newName)
+            repository.updateAppName(trimmed)
+        }
+    }
+
+    fun updateThemePalette(newPalette: String) {
+        _themePalette.value = newPalette
+        viewModelScope.launch {
+            repository.updateThemePalette(newPalette)
         }
     }
 }
