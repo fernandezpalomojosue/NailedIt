@@ -84,7 +84,7 @@ import java.util.Locale
 
 @Composable
 fun CatalogScreen(
-    appName: String = "Virna Nails",
+    appName: String = "NailedIt",
     onNavigateBack: () -> Unit
 ) {
     val context = LocalContext.current

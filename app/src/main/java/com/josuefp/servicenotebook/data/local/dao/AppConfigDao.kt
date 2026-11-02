@@ -12,9 +12,6 @@ interface AppConfigDao {
     @Query("SELECT * FROM app_config WHERE id = 1")
     fun getAppConfig(): Flow<AppConfigEntity?>
 
-    @Query("SELECT * FROM app_config WHERE id = 1")
-    suspend fun getAppConfigOnce(): AppConfigEntity?
-
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun saveAppConfig(config: AppConfigEntity)
 }

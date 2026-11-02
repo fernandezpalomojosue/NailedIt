@@ -33,7 +33,7 @@ import com.josuefp.servicenotebook.data.local.entity.WorkPhotoEntity
         AppConfigEntity::class,
         WorkPhotoEntity::class,
     ],
-    version = 6,
+    version = 5,
     exportSchema = false,
 )
 abstract class AppDatabase : RoomDatabase() {

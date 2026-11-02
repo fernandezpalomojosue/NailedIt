@@ -22,9 +22,11 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -47,7 +49,7 @@ import com.josuefp.servicenotebook.ui.theme.ServiceNotebookTheme
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    appName: String = "Virna Nails",
+    appName: String = "NailedIt",
     themePalette: String = "ROSE",
     onUpdateAppName: (String) -> Unit = {},
     onUpdateThemePalette: (String) -> Unit = {},
@@ -66,7 +68,7 @@ fun HomeScreen(
                 title = { Text(appName) },
                 actions = {
                     IconButton(onClick = { showSettingsDialog = true }) {
-                        Icon(Icons.Default.Settings, contentDescription = "Personalización")
+                        Icon(Icons.Default.Settings, contentDescription = "Ajustes de la aplicación")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -135,15 +137,6 @@ fun HomeScreen(
             ) {
                 Text("Reportes Financieros", style = MaterialTheme.typography.titleMedium)
             }
-
-            Button(
-                onClick = onNavigateToBackup,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(52.dp)
-            ) {
-                Text("Copias de Seguridad", style = MaterialTheme.typography.titleMedium)
-            }
         }
     }
 
@@ -156,6 +149,10 @@ fun HomeScreen(
                 onUpdateAppName(newName)
                 onUpdateThemePalette(newTheme)
                 showSettingsDialog = false
+            },
+            onNavigateToBackup = {
+                showSettingsDialog = false
+                onNavigateToBackup()
             }
         )
     }
@@ -166,7 +163,8 @@ fun AppSettingsDialog(
     currentName: String,
     currentTheme: String,
     onDismiss: () -> Unit,
-    onConfirm: (newName: String, newTheme: String) -> Unit
+    onConfirm: (newName: String, newTheme: String) -> Unit,
+    onNavigateToBackup: () -> Unit
 ) {
     var name by remember { mutableStateOf(currentName) }
     var selectedTheme by remember { mutableStateOf(currentTheme) }
@@ -183,7 +181,7 @@ fun AppSettingsDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Personalización de la App") },
+        title = { Text("Ajustes de la Aplicación ⚙️") },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 if (errorMessage != null) {
@@ -198,7 +196,7 @@ fun AppSettingsDialog(
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(2.dp))
                 Text("Tema de color principal", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
 
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -237,6 +235,21 @@ fun AppSettingsDialog(
                         }
                     }
                 }
+
+                Spacer(modifier = Modifier.height(4.dp))
+                HorizontalDivider()
+                Spacer(modifier = Modifier.height(2.dp))
+
+                Text("Sistema y Respaldo", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+
+                OutlinedButton(
+                    onClick = onNavigateToBackup,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(Icons.Default.Settings, contentDescription = null)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Copias de Seguridad (Backup)")
+                }
             }
         },
         confirmButton = {
@@ -265,7 +278,7 @@ fun AppSettingsDialog(
 fun HomeScreenPreview() {
     ServiceNotebookTheme {
         HomeScreen(
-            appName = "Virna Nails",
+            appName = "NailedIt",
             themePalette = "ROSE",
             onUpdateAppName = {},
             onUpdateThemePalette = {},
