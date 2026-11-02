@@ -7,5 +7,6 @@ import androidx.room.PrimaryKey
 data class AppConfigEntity(
     @PrimaryKey
     val id: Int = 1,
-    val appName: String = "NailedIt"
+    val appName: String = "NailedIt",
+    val themePalette: String = "ROSE"
 )
