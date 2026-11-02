@@ -181,7 +181,13 @@ fun HomeScreen(
                 TopAppBar(
                     title = { Text(appName) },
                     navigationIcon = {
-                        IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                        IconButton(
+                            onClick = {
+                                scope.launch {
+                                    if (drawerState.isClosed) drawerState.open() else drawerState.close()
+                                }
+                            }
+                        ) {
                             Icon(Icons.Default.Menu, contentDescription = "Menú de navegación")
                         }
                     },
