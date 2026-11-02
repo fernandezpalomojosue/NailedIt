@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Menu
@@ -75,103 +77,110 @@ fun HomeScreen(
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
-            ModalDrawerSheet {
+            ModalDrawerSheet(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .padding(top = 64.dp)
+                    .fillMaxWidth(0.55f),
+                drawerContainerColor = MaterialTheme.colorScheme.surface,
+                drawerShape = RoundedCornerShape(topEnd = 16.dp, bottomEnd = 16.dp)
+            ) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(MaterialTheme.colorScheme.primaryContainer)
-                        .padding(24.dp)
+                        .padding(16.dp)
                 ) {
                     Column {
                         Text(
                             text = appName,
-                            style = MaterialTheme.typography.headlineMedium,
+                            style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onPrimaryContainer
                         )
-                        Spacer(modifier = Modifier.height(4.dp))
+                        Spacer(modifier = Modifier.height(2.dp))
                         Text(
-                            text = "Gestión de Servicio y Estudio 💅",
-                            style = MaterialTheme.typography.bodySmall,
+                            text = "Estudio & Citas 💅",
+                            style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
                         )
                     }
                 }
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
                 NavigationDrawerItem(
-                    label = { Text("Inventario de Productos 📦", style = MaterialTheme.typography.titleMedium) },
+                    label = { Text("Inventario 📦", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold) },
                     selected = false,
                     onClick = {
                         scope.launch { drawerState.close() }
                         onNavigateToInventory()
                     },
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
                 )
 
                 NavigationDrawerItem(
-                    label = { Text("Catálogo y Calculadora 💅", style = MaterialTheme.typography.titleMedium) },
+                    label = { Text("Catálogo 💅", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold) },
                     selected = false,
                     onClick = {
                         scope.launch { drawerState.close() }
                         onNavigateToCatalog()
                     },
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
                 )
 
                 NavigationDrawerItem(
-                    label = { Text("Agenda y Citas 📅", style = MaterialTheme.typography.titleMedium) },
+                    label = { Text("Agenda 📅", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold) },
                     selected = false,
                     onClick = {
                         scope.launch { drawerState.close() }
                         onNavigateToAgenda()
                     },
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
                 )
 
                 NavigationDrawerItem(
-                    label = { Text("Galería de Trabajos 📷", style = MaterialTheme.typography.titleMedium) },
+                    label = { Text("Galería 📷", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold) },
                     selected = false,
                     onClick = {
                         scope.launch { drawerState.close() }
                         onNavigateToGallery()
                     },
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
                 )
 
                 NavigationDrawerItem(
-                    label = { Text("Reportes Financieros 📊", style = MaterialTheme.typography.titleMedium) },
+                    label = { Text("Reportes 📊", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold) },
                     selected = false,
                     onClick = {
                         scope.launch { drawerState.close() }
                         onNavigateToReports()
                     },
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
                 )
 
-                Spacer(modifier = Modifier.height(8.dp))
-                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(4.dp))
+                HorizontalDivider(modifier = Modifier.padding(horizontal = 12.dp))
+                Spacer(modifier = Modifier.height(4.dp))
 
                 NavigationDrawerItem(
-                    label = { Text("Copias de Seguridad 💾", style = MaterialTheme.typography.titleMedium) },
+                    label = { Text("Respaldos 💾", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold) },
                     selected = false,
                     onClick = {
                         scope.launch { drawerState.close() }
                         onNavigateToBackup()
                     },
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
                 )
 
                 NavigationDrawerItem(
-                    label = { Text("Ajustes y Personalización ⚙️", style = MaterialTheme.typography.titleMedium) },
+                    label = { Text("Ajustes ⚙️", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold) },
                     selected = false,
                     onClick = {
                         scope.launch { drawerState.close() }
                         showSettingsDialog = true
                     },
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
                 )
             }
         }
