@@ -3,12 +3,18 @@ package com.josuefp.servicenotebook.ui.navigation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.josuefp.servicenotebook.data.local.AppDatabase
+import com.josuefp.servicenotebook.data.repository.AgendaRepository
+import com.josuefp.servicenotebook.data.repository.InventoryRepository
 import com.josuefp.servicenotebook.ui.screens.AgendaScreen
 import com.josuefp.servicenotebook.ui.screens.AppointmentFormScreen
 import com.josuefp.servicenotebook.ui.screens.BackupScreen
@@ -18,14 +24,25 @@ import com.josuefp.servicenotebook.ui.screens.HomeScreen
 import com.josuefp.servicenotebook.ui.screens.InventoryScreen
 import com.josuefp.servicenotebook.ui.screens.ReportsScreen
 import com.josuefp.servicenotebook.ui.viewmodel.SettingsViewModel
+import kotlinx.coroutines.launch
 
 @Composable
 fun AppNavHost(
     settingsViewModel: SettingsViewModel,
     navController: NavHostController = rememberNavController()
 ) {
+    val context = LocalContext.current
+    val database = remember { AppDatabase.getDatabase(context) }
+    val agendaRepository = remember { AgendaRepository(database) }
+    val inventoryRepository = remember { InventoryRepository(database) }
+    val scope = rememberCoroutineScope()
+
     val appName by settingsViewModel.appName.collectAsState()
     val themePalette by settingsViewModel.themePalette.collectAsState()
+
+    val allAppointments by agendaRepository.getAllAppointmentsWithDetails().collectAsState(initial = emptyList())
+    val allProducts by inventoryRepository.getAllProducts().collectAsState(initial = emptyList())
+    val allClients by agendaRepository.getAllClients().collectAsState(initial = emptyList())
 
     NavHost(
         navController = navController,
@@ -35,6 +52,12 @@ fun AppNavHost(
             HomeScreen(
                 appName = appName,
                 themePalette = themePalette,
+                allAppointments = allAppointments,
+                allProducts = allProducts,
+                allClients = allClients,
+                onUpdateAppointmentStatus = { appId, newStatus ->
+                    scope.launch { agendaRepository.updateAppointmentStatus(appId, newStatus) }
+                },
                 onUpdateAppName = settingsViewModel::updateAppName,
                 onUpdateThemePalette = settingsViewModel::updateThemePalette,
                 onNavigateToInventory = { navController.navigate(NavRoute.Inventory.route) },
@@ -42,7 +65,10 @@ fun AppNavHost(
                 onNavigateToAgenda = { navController.navigate(NavRoute.Agenda.route) },
                 onNavigateToGallery = { navController.navigate(NavRoute.Gallery.route) },
                 onNavigateToReports = { navController.navigate(NavRoute.Reports.route) },
-                onNavigateToBackup = { navController.navigate(NavRoute.Backup.route) }
+                onNavigateToBackup = { navController.navigate(NavRoute.Backup.route) },
+                onNavigateToAppointmentForm = { appointmentId, dateMillis ->
+                    navController.navigate(NavRoute.AppointmentForm.createRoute(appointmentId, dateMillis))
+                }
             )
         }
         composable(NavRoute.Inventory.route) {
