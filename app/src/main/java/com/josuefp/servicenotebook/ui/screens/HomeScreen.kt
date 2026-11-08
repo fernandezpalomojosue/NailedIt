@@ -27,6 +27,7 @@ import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
@@ -223,6 +224,7 @@ fun HomeScreen(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 NavigationDrawerItem(
+                    icon = { Icon(Icons.Default.ShoppingCart, contentDescription = null) },
                     label = { Text("Inventario", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold) },
                     selected = false,
                     onClick = {
@@ -233,6 +235,7 @@ fun HomeScreen(
                 )
 
                 NavigationDrawerItem(
+                    icon = { Icon(Icons.Default.Star, contentDescription = null) },
                     label = { Text("Catálogo", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold) },
                     selected = false,
                     onClick = {
@@ -243,6 +246,7 @@ fun HomeScreen(
                 )
 
                 NavigationDrawerItem(
+                    icon = { Icon(Icons.Default.DateRange, contentDescription = null) },
                     label = { Text("Agenda", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold) },
                     selected = false,
                     onClick = {
@@ -253,6 +257,7 @@ fun HomeScreen(
                 )
 
                 NavigationDrawerItem(
+                    icon = { Icon(Icons.Default.Info, contentDescription = null) },
                     label = { Text("Galería", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold) },
                     selected = false,
                     onClick = {
@@ -263,6 +268,7 @@ fun HomeScreen(
                 )
 
                 NavigationDrawerItem(
+                    icon = { Icon(Icons.Default.CheckCircle, contentDescription = null) },
                     label = { Text("Reportes", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold) },
                     selected = false,
                     onClick = {
@@ -277,6 +283,7 @@ fun HomeScreen(
                 Spacer(modifier = Modifier.height(4.dp))
 
                 NavigationDrawerItem(
+                    icon = { Icon(Icons.Default.Settings, contentDescription = null) },
                     label = { Text("Respaldos", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold) },
                     selected = false,
                     onClick = {
@@ -287,6 +294,7 @@ fun HomeScreen(
                 )
 
                 NavigationDrawerItem(
+                    icon = { Icon(Icons.Default.Settings, contentDescription = null) },
                     label = { Text("Ajustes", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold) },
                     selected = false,
                     onClick = {
