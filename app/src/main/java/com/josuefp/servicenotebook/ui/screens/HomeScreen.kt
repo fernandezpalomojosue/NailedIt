@@ -213,7 +213,7 @@ fun HomeScreen(
                         )
                         Spacer(modifier = Modifier.height(2.dp))
                         Text(
-                            text = "Estudio & Citas 💅",
+                            text = "Estudio & Citas",
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
                         )
@@ -223,7 +223,7 @@ fun HomeScreen(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 NavigationDrawerItem(
-                    label = { Text("Inventario 📦", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold) },
+                    label = { Text("Inventario", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold) },
                     selected = false,
                     onClick = {
                         scope.launch { drawerState.close() }
@@ -233,7 +233,7 @@ fun HomeScreen(
                 )
 
                 NavigationDrawerItem(
-                    label = { Text("Catálogo 💅", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold) },
+                    label = { Text("Catálogo", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold) },
                     selected = false,
                     onClick = {
                         scope.launch { drawerState.close() }
@@ -243,7 +243,7 @@ fun HomeScreen(
                 )
 
                 NavigationDrawerItem(
-                    label = { Text("Agenda 📅", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold) },
+                    label = { Text("Agenda", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold) },
                     selected = false,
                     onClick = {
                         scope.launch { drawerState.close() }
@@ -253,7 +253,7 @@ fun HomeScreen(
                 )
 
                 NavigationDrawerItem(
-                    label = { Text("Galería 📷", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold) },
+                    label = { Text("Galería", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold) },
                     selected = false,
                     onClick = {
                         scope.launch { drawerState.close() }
@@ -263,7 +263,7 @@ fun HomeScreen(
                 )
 
                 NavigationDrawerItem(
-                    label = { Text("Reportes 📊", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold) },
+                    label = { Text("Reportes", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold) },
                     selected = false,
                     onClick = {
                         scope.launch { drawerState.close() }
@@ -277,7 +277,7 @@ fun HomeScreen(
                 Spacer(modifier = Modifier.height(4.dp))
 
                 NavigationDrawerItem(
-                    label = { Text("Respaldos 💾", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold) },
+                    label = { Text("Respaldos", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold) },
                     selected = false,
                     onClick = {
                         scope.launch { drawerState.close() }
@@ -287,7 +287,7 @@ fun HomeScreen(
                 )
 
                 NavigationDrawerItem(
-                    label = { Text("Ajustes ⚙️", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold) },
+                    label = { Text("Ajustes", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold) },
                     selected = false,
                     onClick = {
                         scope.launch { drawerState.close() }
@@ -335,7 +335,7 @@ fun HomeScreen(
                 // Dashboard Header Greeting
                 item {
                     Text(
-                        text = "Bienvenida, $appName 💅",
+                        text = "Bienvenida, $appName",
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold
                     )
@@ -379,7 +379,7 @@ fun HomeScreen(
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Text(
-                                        text = "No tienes citas agendadas para el día de hoy 💅",
+                                        text = "No tienes citas agendadas para el día de hoy.",
                                         style = MaterialTheme.typography.bodyMedium,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                         textAlign = TextAlign.Center
@@ -511,7 +511,7 @@ fun HomeScreen(
 
                             if (lowStockProducts.isEmpty()) {
                                 Text(
-                                    text = "✅ Inventario al día. Todos tus productos e insumos tienen stock suficiente.",
+                                    text = "Inventario al día. Todos tus productos e insumos tienen stock suficiente.",
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -606,17 +606,17 @@ fun AppSettingsDialog(
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
     val themeOptions = listOf(
-        "ROSE" to ("Rosa / Magenta 🌸" to Color(0xFFD81B60)),
-        "PURPLE" to ("Púrpura / Lavanda 🪻" to Color(0xFF8E24AA)),
-        "TEAL" to ("Turquesa / Menta 🌿" to Color(0xFF00897B)),
-        "CORAL" to ("Coral Cálido 🍑" to Color(0xFFE64A19)),
-        "BLUE" to ("Azul Océano 💙" to Color(0xFF1E88E5)),
-        "ELEGANT_DARK" to ("Elegante Oscuro 🖤" to Color(0xFF37474F))
+        "ROSE" to ("Rosa / Magenta" to Color(0xFFD81B60)),
+        "PURPLE" to ("Púrpura / Lavanda" to Color(0xFF8E24AA)),
+        "TEAL" to ("Turquesa / Menta" to Color(0xFF00897B)),
+        "CORAL" to ("Coral Cálido" to Color(0xFFE64A19)),
+        "BLUE" to ("Azul Océano" to Color(0xFF1E88E5)),
+        "ELEGANT_DARK" to ("Elegante Oscuro" to Color(0xFF37474F))
     )
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Ajustes de la Aplicación ⚙️") },
+        title = { Text("Ajustes de la Aplicación") },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 if (errorMessage != null) {

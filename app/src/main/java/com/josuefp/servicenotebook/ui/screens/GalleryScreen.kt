@@ -182,12 +182,12 @@ fun GalleryScreenContent(
                 Tab(
                     selected = selectedTab == GalleryTab.HANDS,
                     onClick = { onTabSelected(GalleryTab.HANDS) },
-                    text = { Text("Manos 💅") }
+                    text = { Text("Manos") }
                 )
                 Tab(
                     selected = selectedTab == GalleryTab.FEET,
                     onClick = { onTabSelected(GalleryTab.FEET) },
-                    text = { Text("Pies 🦶") }
+                    text = { Text("Pies") }
                 )
             }
 
@@ -324,12 +324,12 @@ fun AddWorkPhotoDialog(
                     FilterChip(
                         selected = category == "Manos",
                         onClick = { category = "Manos" },
-                        label = { Text("Manos 💅") }
+                        label = { Text("Manos") }
                     )
                     FilterChip(
                         selected = category == "Pies",
                         onClick = { category = "Pies" },
-                        label = { Text("Pies 🦶") }
+                        label = { Text("Pies") }
                     )
                 }
 
