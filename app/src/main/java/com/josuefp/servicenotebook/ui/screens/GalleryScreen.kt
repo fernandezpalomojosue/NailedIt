@@ -25,6 +25,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -71,7 +72,8 @@ import java.util.Locale
 
 @Composable
 fun GalleryScreen(
-    appName: String = "Virna Nails",
+    appName: String = "NailedIt",
+    onOpenDrawer: () -> Unit = {},
     onNavigateBack: () -> Unit
 ) {
     val context = LocalContext.current
@@ -91,6 +93,7 @@ fun GalleryScreen(
         selectedTab = selectedTab,
         photos = photos,
         onTabSelected = viewModel::setSelectedTab,
+        onOpenDrawer = onOpenDrawer,
         onNavigateBack = onNavigateBack,
         onAddPhotoClick = { showAddPhotoDialog = true },
         onPhotoClick = { photo -> selectedPhotoForDetail = photo }
@@ -150,6 +153,7 @@ fun GalleryScreenContent(
     selectedTab: GalleryTab,
     photos: List<WorkPhotoEntity>,
     onTabSelected: (GalleryTab) -> Unit,
+    onOpenDrawer: () -> Unit = {},
     onNavigateBack: () -> Unit,
     onAddPhotoClick: () -> Unit,
     onPhotoClick: (WorkPhotoEntity) -> Unit
@@ -159,8 +163,13 @@ fun GalleryScreenContent(
             TopAppBar(
                 title = { Text("$appName - Galería") },
                 navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Atrás")
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        IconButton(onClick = onOpenDrawer) {
+                            Icon(Icons.Default.Menu, contentDescription = "Menú")
+                        }
+                        IconButton(onClick = onNavigateBack) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Atrás")
+                        }
                     }
                 }
             )

@@ -5,6 +5,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -24,6 +26,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
@@ -35,7 +38,8 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun BackupScreen(
-    appName: String = "Virna Nails",
+    appName: String = "NailedIt",
+    onOpenDrawer: () -> Unit = {},
     onNavigateBack: () -> Unit
 ) {
     val context = LocalContext.current
@@ -85,8 +89,9 @@ fun BackupScreen(
 
     BackupScreenContent(
         appName = appName,
-        onExportClick = { exportLauncher.launch("virna_nails_backup.json") },
+        onExportClick = { exportLauncher.launch("nailedit_backup.json") },
         onImportClick = { importLauncher.launch(arrayOf("application/json", "*/*")) },
+        onOpenDrawer = onOpenDrawer,
         onNavigateBack = onNavigateBack
     )
 }
@@ -97,6 +102,7 @@ fun BackupScreenContent(
     appName: String,
     onExportClick: () -> Unit,
     onImportClick: () -> Unit,
+    onOpenDrawer: () -> Unit = {},
     onNavigateBack: () -> Unit
 ) {
     Scaffold(
@@ -104,8 +110,13 @@ fun BackupScreenContent(
             TopAppBar(
                 title = { Text("$appName - Copias de Seguridad") },
                 navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Atrás")
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        IconButton(onClick = onOpenDrawer) {
+                            Icon(Icons.Default.Menu, contentDescription = "Menú")
+                        }
+                        IconButton(onClick = onNavigateBack) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Atrás")
+                        }
                     }
                 }
             )
@@ -162,7 +173,7 @@ fun BackupScreenContent(
 fun BackupScreenPreview() {
     ServiceNotebookTheme {
         BackupScreenContent(
-            appName = "Virna Nails",
+            appName = "NailedIt",
             onExportClick = {},
             onImportClick = {},
             onNavigateBack = {}

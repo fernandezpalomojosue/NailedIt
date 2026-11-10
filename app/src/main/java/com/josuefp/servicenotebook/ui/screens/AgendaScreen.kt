@@ -29,6 +29,7 @@ import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Search
@@ -86,7 +87,8 @@ import java.util.Locale
 
 @Composable
 fun AgendaScreen(
-    appName: String = "Virna Nails",
+    appName: String = "NailedIt",
+    onOpenDrawer: () -> Unit = {},
     onNavigateToAppointmentForm: (Long, Long) -> Unit = { _, _ -> },
     onNavigateBack: () -> Unit
 ) {
@@ -127,6 +129,7 @@ fun AgendaScreen(
         onDateSelected = viewModel::setSelectedDate,
         onYearMonthChanged = viewModel::setYearMonth,
         onClientSearchQueryChange = viewModel::setClientSearchQuery,
+        onOpenDrawer = onOpenDrawer,
         onNavigateBack = onNavigateBack,
         onAddClientClick = {
             editingClient = null
@@ -255,6 +258,7 @@ fun AgendaScreenContent(
     onDateSelected: (Long) -> Unit,
     onYearMonthChanged: (year: Int, month: Int) -> Unit,
     onClientSearchQueryChange: (String) -> Unit,
+    onOpenDrawer: () -> Unit = {},
     onNavigateBack: () -> Unit,
     onAddClientClick: () -> Unit,
     onEditClientClick: (ClientEntity) -> Unit,
@@ -271,8 +275,13 @@ fun AgendaScreenContent(
             TopAppBar(
                 title = { Text("$appName - Agenda") },
                 navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Atrás")
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        IconButton(onClick = onOpenDrawer) {
+                            Icon(Icons.Default.Menu, contentDescription = "Menú")
+                        }
+                        IconButton(onClick = onNavigateBack) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Atrás")
+                        }
                     }
                 }
             )

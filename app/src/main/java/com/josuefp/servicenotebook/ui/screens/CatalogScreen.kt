@@ -23,6 +23,7 @@ import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
@@ -85,6 +86,7 @@ import java.util.Locale
 @Composable
 fun CatalogScreen(
     appName: String = "NailedIt",
+    onOpenDrawer: () -> Unit = {},
     onNavigateBack: () -> Unit
 ) {
     val context = LocalContext.current
@@ -124,6 +126,7 @@ fun CatalogScreen(
         onSearchQueryChange = viewModel::setSearchQuery,
         onCategorySelected = viewModel::setSelectedCategory,
         onSortOrderSelected = viewModel::setSortOrder,
+        onOpenDrawer = onOpenDrawer,
         onNavigateBack = onNavigateBack,
         onAddServiceClick = {
             editingService = null
@@ -227,6 +230,7 @@ fun CatalogScreenContent(
     onSearchQueryChange: (String) -> Unit,
     onCategorySelected: (String) -> Unit,
     onSortOrderSelected: (CatalogSortOrder) -> Unit,
+    onOpenDrawer: () -> Unit = {},
     onNavigateBack: () -> Unit,
     onAddServiceClick: () -> Unit,
     onEditServiceClick: (ServiceEntity) -> Unit,
@@ -246,8 +250,13 @@ fun CatalogScreenContent(
             TopAppBar(
                 title = { Text("$appName - Catálogo") },
                 navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Atrás")
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        IconButton(onClick = onOpenDrawer) {
+                            Icon(Icons.Default.Menu, contentDescription = "Menú")
+                        }
+                        IconButton(onClick = onNavigateBack) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Atrás")
+                        }
                     }
                 }
             )
